@@ -1,0 +1,56 @@
+body {
+    font-family: 'helvetic neue', helvetica, 'arial sans';
+    font-size:14px;
+    line-height: 24px;
+    color: #333;
+    text-align:center;
+    padding:35px;
+}
+
+form, p, span {
+    margin:0;
+    padding:0;
+}
+
+input {
+    font-family: 'helvetic neue', helvetica, 'arial sans';
+    font-size:14px;
+}
+
+a {
+    color:#0000FF;
+    text-decoration:none;
+}
+
+a:hover { text-decoration:underline; }
+
+#wrapper {
+    color: #ccc;
+    margin:auto;
+    padding:10px;
+    padding-bottom: 20px;
+    background:#888;
+    width:410px;
+    border: none;
+}
+
+#chatbox {
+    color: #333;
+    text-align:left;
+    margin:20 auto;
+    padding:10px;
+    background:#fff;
+    height:80%;
+    width:88%;
+    border:none;
+    overflow:auto;
+}
+
+#userinput {
+    width:77%;
+    border:none;
+}
+
+#submitinput {
+    width: 60px;
+}

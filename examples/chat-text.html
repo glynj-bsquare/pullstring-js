@@ -1,0 +1,71 @@
+<html>
+<head>
+    <title>PullString SDK Text Example</title>
+    <link type="text/css" rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<div id="wrapper">
+    <div id="chatbox"></div>
+    <form name="message" action="">
+        <input name="userinput" type="text" id="userinput" />
+        <input name="submitinput" type="submit" id="submitinput" value="Send">
+    </form>
+</div>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script type="text/javascript" src="../dist/pullstring.min.js"></script>
+<script type="text/javascript">
+
+var PS = pullstring;
+
+const KEY = '9fd2a189-3d57-4c02-8a55-5f0159bff2cf';
+const PROJECT = 'e50b56df-95b7-4fa1-9061-83a7a9bea372';
+
+var request = new PS.Request({
+    apiKey: KEY,
+});
+
+var conversation = new PS.Conversation();
+
+// start conversation immediately
+$(document).ready(function() {
+    conversation.start(PROJECT, request, showResponse);
+});
+
+// display user input in the chatbox and send message to Web API
+$("#submitinput").click(function(){
+    var msg = $("#userinput").val();
+    var oldHeight = getScrollHeight();
+    conversation.sendText(msg, request, showResponse);
+    $("#userinput").val("");
+    $("#chatbox").append("<strong>You:<\/strong> " + msg + "<br/>");
+    autoScroll(oldHeight);
+    return false;
+});
+
+// print the response from the Web API to the chat box
+var showResponse = function(response) {
+    if (!request.conversationId) request.conversationId = response.conversationId;
+    for (var output of response.outputs) {
+        if (output.text) {
+            var oldHeight = getScrollHeight();
+            $("#chatbox").append("<strong>" + output.character + ":<\/strong> " + output.text + "<br/>");
+            autoScroll(oldHeight);
+        }
+    }
+};
+
+var autoScroll = function(oldHeight) {
+    var newHeight = getScrollHeight();
+    if (newHeight > oldHeight) {
+        $("#chatbox").animate({ scrollTop: newHeight }, 'normal');
+    }
+}
+
+var getScrollHeight = function() {
+    return $("#chatbox")[0].scrollHeight - 20;
+};
+
+</script>
+</body>
+</html>
