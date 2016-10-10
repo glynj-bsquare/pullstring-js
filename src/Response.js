@@ -47,7 +47,7 @@ class Phoneme {
 }
 
 /**
- * Base class to describe a single entity, such as a label, counter, or flag
+ * Base class to describe a single entity, such as a label, counter, flag, or list
  * @property {string} name
  */
 class Entity {
@@ -85,7 +85,7 @@ class Counter extends Entity {
 }
 
 /**
- * Subclass of Entity to describe a single Label
+ * Subclass of Entity to describe a single Flag
  * @extends Entity
  * @property {EEntityType} type EEntityType.Flag (read only)
  * @property {boolean} value
@@ -99,7 +99,7 @@ class Flag extends Entity {
 }
 
 /**
- * Subclass of Entity to describe a single Label
+ * Subclass of Entity to describe a single List
  * @extends Entity
  * @property {EEntityType} type EEntityType.List (read only)
  * @property {Array} value
