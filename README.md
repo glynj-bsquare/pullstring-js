@@ -10,7 +10,7 @@ write in the PullString Author environment and publish to the PullString Platfor
 ## Library
 
 The JavaScript SDK is written in ES6 and uses [Babel](http://babeljs.io/) and [Webpack](https://webpack.github.io/) to
-generate a library for the browser. Run the following command to insall the necessary build dependencies.
+generate a library for the browser. Run the following command to install the necessary build dependencies.
 
 ```
 npm run init
@@ -63,7 +63,7 @@ that not all browsers support recording audio.
 
 ## Documentation
 
-Documentaion for this SDK can be found in the `docs` directory. In addition, the PullString Web API specification can be
+Documentation for this SDK can be found in the `docs` directory. In addition, the PullString Web API specification can be
 found at:
 
 > http://docs.pullstring.com/docs/api
@@ -74,7 +74,7 @@ For more information about the PullString Platform, refer to:
 
 ## Developing
 
-To kick off a non-uglified, continously updating development build:
+To kick off a non-uglified, continuously updating development build:
 
 ```
 npm run dev
@@ -88,7 +88,7 @@ To also run unit tests that are applied whenever changes are detected:
 npm run dev-and-test
 ```
 
-If only want to run unit tests on the development build:
+If you only want to run unit tests on the development build:
 
 ```
 npm run test-dev
