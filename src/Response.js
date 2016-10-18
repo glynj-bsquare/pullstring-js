@@ -196,6 +196,7 @@ class Status {
  * is started.
  * @property {string} participantId Identifies state to the Web API and can
  * persist across sessions.
+ * @property {string} etag Unique identifier of a version of the content.
  * @property {number} timedResponseInterval Indicates that there may be another
  * response to process in the specified number of seconds. Set a timer and call
  * checkForTimedResponse() from a conversation to retrieve it.
@@ -247,6 +248,7 @@ class Response {
         this.lastModified = json.last_modified ? new Date(json.last_modified) : null;
         this.conversationId = json.conversation ? String(json.conversation) : null;
         this.participantId = json.participant ? String(json.participant) : null;
+        this.etag = json = json.etag ? String(json.etag) : null;
         this.timedResponseInterval = json.timed_response_interval ? +json.timed_response_interval : -1;
         this.asrHypothesis = json.asr_hypothesis ? String(json.asr_hypothesis) : null;
     }
