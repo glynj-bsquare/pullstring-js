@@ -309,6 +309,11 @@ class Conversation {
         let headers = this._headersForRequest(request, contentType);
         let params = this._paramsForRequest(request);
 
+        // If doEncode is true, our body is json. So add more params from request.
+        if (doEncode) {
+            body = this._bodyForRequest(request, body);
+        }
+
         this._client.post(
             endpoint,
             params,
@@ -341,15 +346,36 @@ class Conversation {
 
     _paramsForRequest(request) {
         let params = {
-            build_type: request.buildType, // eslint-disable-line camelcase
             asr_language: request.language, // eslint-disable-line camelcase
             locale: request.locale,
         };
 
         if (request.acountId) params.account = request.accountId;
-        if (request.participantId) params.participant = request.participantId;
 
         return params;
+    }
+
+    _bodyForRequest(request, params = null) {
+        let body = {};
+
+        // only add build_type and restart_if_modified if not the default values
+        if (request.buildType !== Request.EBuildType.Production) {
+            body.build_type = request.buildType; // eslint-disable-line camelcase
+        }
+
+        if (request.restartIfModified === false) {
+            body.restart_if_modified = false; // eslint-disable-line camelcase
+        }
+
+        if (request.participantId) body.participant = request.participantId;
+
+        if (params) {
+            for (let p in params) {
+                body[p] = params[p];
+            }
+        }
+
+        return body;
     }
 
     _endpointForRequest(request) {
