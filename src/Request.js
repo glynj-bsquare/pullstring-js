@@ -43,8 +43,11 @@ const EAudioFormat = {
  * is started.
  * @property {string} language ASR language; defaults to 'en-US'.
  * @property {string} locale User locale; defaults to'en-US'.
+ * @property {boolean} restartIfModified Restart this conversation if a newer
+ * version of the project has been published. Default value is true.
+ * @property {number} timeZoneOffset A value in seconds representing the offset
+ * in UTC. For example, PST would be -28800.
  * @property {string} accountId
- * @property {number} timeZoneOffset
  */
 class Request {
     constructor(config) {
@@ -56,6 +59,7 @@ class Request {
         this.locale = config.locale || 'en-US';
         this.accountId = config.accountId;
         this.timeZoneOffset = config.timeZoneOffset || 0;
+        this.restartIfModified = config.restartIfModified || true;
     }
 }
 
