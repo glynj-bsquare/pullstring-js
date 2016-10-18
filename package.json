@@ -1,6 +1,6 @@
 {
   "name": "pullstring-js",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "An SDK for interfacing with PullString's conversational AI engine.",
   "main": "dist/pullstring.min.js",
   "scripts": {
@@ -19,6 +19,10 @@
   ],
   "author": "PullString, Inc",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pullstring/pullstring-js"
+  },
   "devDependencies": {
     "ava": "^0.16.0",
     "babel": "^6.5.2",
