@@ -63,7 +63,7 @@ that not all browsers support recording audio.
 
 ## Documentation
 
-Documentation for this SDK can be found in the `docs` directory. In addition, the PullString Web API specification can be
+Documentation for this SDK can be found in [`docs/PullStringSDK.md`](docs/PullStringSDK.md). In addition, the PullString Web API specification can be
 found at:
 
 > http://docs.pullstring.com/docs/api
