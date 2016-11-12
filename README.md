@@ -46,11 +46,14 @@ var request = new PS.Request({
 });
 
 var conversation = new PS.Conversation();
-conversation.start(MY_PROJECT_ID, request, function(response) {
+
+conversation.onResponse = function(response) {
     for (var output of response.outputs) {
         console.log(output.text);
     }
-});
+};
+
+conversation.start(MY_PROJECT_ID, request);
 
 // > 'Do you want to play Rock, Paper, Scissors?'
 ```

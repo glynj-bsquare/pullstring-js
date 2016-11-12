@@ -25,7 +25,6 @@ import {Speech} from './Speech.js';
  * @property {string} ApiBaseUrl
  * @property {Number} AsrSampleRate
  * @property {Number} AsrChannels
- * @property {Function} onResponse
  */
 class Conversation {
     /**
@@ -34,6 +33,9 @@ class Conversation {
      * XMLHttpReqeuest module class.
      */
     constructor(nodeXhr = null) {
+        /**
+         * @callback Conversation~onResponse
+         */
         this.onResponse = null;
         let config = { baseUrl: Conversation.ApiBaseUrl };
         if (nodeXhr) config.xhr = nodeXhr;
@@ -44,7 +46,7 @@ class Conversation {
 
     /**
      * Start a new conversation with the Web API and receive a reponse via the
-     * callback.
+     * onResponse callback.
      * @param {string} projectName The PullString project ID.
      * @param {Request} request A Request object with a valid apiKey value
      * specified.
@@ -60,7 +62,8 @@ class Conversation {
     }
 
     /**
-     * Send user input text to the Web API and receive a response via the callback.
+     * Send user input text to the Web API and receive a response via the
+     * onResponse callback.
      * @param {string} text User input text.
      * @param {Request} request A request object with at least apiKey and
      * conversationId set.
@@ -78,7 +81,7 @@ class Conversation {
 
     /**
      * Send an activity name or ID to the Web API and receive a response via
-     * the callback.
+     * the onResponse callback.
      * @param {string} activity The activity name or ID.
      * @param {Request} request A request object with at least apiKey and
      * conversationId set.
@@ -92,7 +95,8 @@ class Conversation {
     }
 
     /**
-     * Send an event to the Web API and receive a response via the callback.
+     * Send an event to the Web API and receive a response via the onResponse
+     * callback.
      * @param {string} event The event name.
      * @param {Object} parameters Any accompanying parameters.
      * @param {Request} request A request object with at least apiKey and
@@ -199,7 +203,7 @@ class Conversation {
      * only need to call this if the previous response returned a value for the
      * timedResponseInterval >= 0.  In this case, set a timer for that value (in
      * seconds) and then call this method. If there is no time-based response,
-     * the callback will pass an empty Response object.
+     * the onResponse callback will be passed an empty Response object.
      * @param {Request} request A request object with at least apiKey and
      * conversationId set.
      */

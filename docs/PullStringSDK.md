@@ -15,7 +15,7 @@
 project ID and a Request object specifying you API key.</p>
 <p>The Web API returns a Response object that can contain zero or more outputs,
 such as lines of dialog or behaviors. This Response object is passed to the
-callback as its sole parameter.</p>
+onResponse callback as its sole parameter.</p>
 </dd>
 <dt><a href="#Request">Request</a></dt>
 <dd><p>Describe the parameters for a request to the PullString Web API.</p>
@@ -103,7 +103,7 @@ project ID and a Request object specifying you API key.
 
 The Web API returns a Response object that can contain zero or more outputs,
 such as lines of dialog or behaviors. This Response object is passed to the
-callback as its sole parameter.
+onResponse callback as its sole parameter.
 
 **Kind**: global class  
 **Properties**
@@ -117,20 +117,23 @@ callback as its sole parameter.
 
 * [Conversation](#Conversation)
     * [new Conversation([nodeXhr])](#new_Conversation_new)
-    * [.start(projectName, request, callback)](#Conversation+start)
-    * [.sendText(text, request, callback)](#Conversation+sendText)
-    * [.sendActivity(activity, request, callback)](#Conversation+sendActivity)
-    * [.sendEvent(event, parameters, request, callback)](#Conversation+sendEvent)
-    * [.startAudio(request)](#Conversation+startAudio)
-    * [.addAudio(buffer)](#Conversation+addAudio)
-    * [.stopAudio(callback)](#Conversation+stopAudio)
-    * [.sendAudio(audio, format, request, callback)](#Conversation+sendAudio)
-    * [.goTo(responseId, request, callback)](#Conversation+goTo)
-    * [.checkForTimedResponse(request, callback)](#Conversation+checkForTimedResponse)
-    * [.getEntities(entities, request, callback)](#Conversation+getEntities)
-    * [.setEntities(entities, request, callback)](#Conversation+setEntities)
-    * [.getConversationId()](#Conversation+getConversationId) ⇒ <code>string</code>
-    * [.getParticipantId()](#Conversation+getParticipantId) ⇒ <code>string</code>
+    * _instance_
+        * [.start(projectName, request)](#Conversation+start)
+        * [.sendText(text, request)](#Conversation+sendText)
+        * [.sendActivity(activity, request)](#Conversation+sendActivity)
+        * [.sendEvent(event, parameters, request)](#Conversation+sendEvent)
+        * [.startAudio(request)](#Conversation+startAudio)
+        * [.addAudio(buffer)](#Conversation+addAudio)
+        * [.stopAudio()](#Conversation+stopAudio)
+        * [.sendAudio(audio, format, request)](#Conversation+sendAudio)
+        * [.goTo(responseId, request)](#Conversation+goTo)
+        * [.checkForTimedResponse(request)](#Conversation+checkForTimedResponse)
+        * [.getEntities(entities, request)](#Conversation+getEntities)
+        * [.setEntities(entities, request)](#Conversation+setEntities)
+        * [.getConversationId()](#Conversation+getConversationId) ⇒ <code>string</code>
+        * [.getParticipantId()](#Conversation+getParticipantId) ⇒ <code>string</code>
+    * _inner_
+        * [~onResponse](#Conversation..onResponse) : <code>function</code>
 
 <a name="new_Conversation_new"></a>
 
@@ -144,9 +147,9 @@ Creates a Conversation
 
 <a name="Conversation+start"></a>
 
-### conversation.start(projectName, request, callback)
+### conversation.start(projectName, request)
 Start a new conversation with the Web API and receive a reponse via the
-callback.
+onResponse callback.
 
 **Kind**: instance method of <code>[Conversation](#Conversation)</code>  
 
@@ -155,12 +158,12 @@ callback.
 | projectName | <code>string</code> | The PullString project ID. |
 | request | <code>[Request](#Request)</code> | A Request object with a valid apiKey value specified. |
 | request.apiKey | <code>string</code> | Your API key. |
-| callback | <code>function</code> | A function to receive the Web API's response. It should have a single parameter that will be passed a Response object. |
 
 <a name="Conversation+sendText"></a>
 
-### conversation.sendText(text, request, callback)
-Send user input text to the Web API and receive a response via the callback.
+### conversation.sendText(text, request)
+Send user input text to the Web API and receive a response via the
+onResponse callback.
 
 **Kind**: instance method of <code>[Conversation](#Conversation)</code>  
 
@@ -170,13 +173,12 @@ Send user input text to the Web API and receive a response via the callback.
 | request | <code>[Request](#Request)</code> | A request object with at least apiKey and conversationId set. |
 | request.apiKey | <code>string</code> | Your API key. |
 | request.conversationId | <code>string</code> | The conversation ID received when the conversation was started. |
-| callback | <code>function</code> | A function to receive the Web API's response. It should have a single parameter that will be passed a Response object. |
 
 <a name="Conversation+sendActivity"></a>
 
-### conversation.sendActivity(activity, request, callback)
+### conversation.sendActivity(activity, request)
 Send an activity name or ID to the Web API and receive a response via
-the callback.
+the onResponse callback.
 
 **Kind**: instance method of <code>[Conversation](#Conversation)</code>  
 
@@ -184,12 +186,12 @@ the callback.
 | --- | --- | --- |
 | activity | <code>string</code> | The activity name or ID. |
 | request | <code>[Request](#Request)</code> | A request object with at least apiKey and conversationId set. |
-| callback | <code>function</code> | A function to receive the Web API's response. It should have a single parameter that will be passed a Response object. |
 
 <a name="Conversation+sendEvent"></a>
 
-### conversation.sendEvent(event, parameters, request, callback)
-Send an event to the Web API and receive a response via the callback.
+### conversation.sendEvent(event, parameters, request)
+Send an event to the Web API and receive a response via the onResponse
+callback.
 
 **Kind**: instance method of <code>[Conversation](#Conversation)</code>  
 
@@ -198,7 +200,6 @@ Send an event to the Web API and receive a response via the callback.
 | event | <code>string</code> | The event name. |
 | parameters | <code>Object</code> | Any accompanying parameters. |
 | request | <code>[Request](#Request)</code> | A request object with at least apiKey and conversationId set. |
-| callback | <code>function</code> | A function to receive the Web API's response. It should have a single parameter that will be passed a Response object. |
 
 <a name="Conversation+startAudio"></a>
 
@@ -229,19 +230,14 @@ samples per second.
 
 <a name="Conversation+stopAudio"></a>
 
-### conversation.stopAudio(callback)
+### conversation.stopAudio()
 Signal that all audio has been provided via add_audio() calls. This will
 complete the audio request and return the Web API response.
 
 **Kind**: instance method of <code>[Conversation](#Conversation)</code>  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| callback | <code>function</code> | A function to receive the Web API's response. It should have a single parameter that will be passed a Response object. |
-
 <a name="Conversation+sendAudio"></a>
 
-### conversation.sendAudio(audio, format, request, callback)
+### conversation.sendAudio(audio, format, request)
 Send an entire audio sample of the user speaking to the Web API. Audio
 must be raw, mono 16-bit linear PCM at a sample rate of 16000
 samples per second.
@@ -253,11 +249,10 @@ samples per second.
 | audio | <code>DataView</code> | Mono 16-bit linear PCM audio data at 16k Hz. |
 | format | <code>Request.EAudioFormat</code> | Specify WAV or raw PCM format. Note that only 16-bit linear PCM WAV format at 16k is currently supported. |
 | request | <code>[Request](#Request)</code> | A request object with at least apiKey and conversationId set. |
-| callback | <code>function</code> | A function to receive the Web API's response. It should have a single parameter that will be passed a Response object. |
 
 <a name="Conversation+goTo"></a>
 
-### conversation.goTo(responseId, request, callback)
+### conversation.goTo(responseId, request)
 Jump the conversation directly to a response.
 
 **Kind**: instance method of <code>[Conversation](#Conversation)</code>  
@@ -266,27 +261,25 @@ Jump the conversation directly to a response.
 | --- | --- | --- |
 | responseId | <code>string</code> | The UUID of the response to jump to. |
 | request | <code>[Request](#Request)</code> | A request object with at least apiKey and conversationId set. |
-| callback | <code>function</code> | A function to receive the Web API's response. It should have a single parameter that will be passed a Response object. |
 
 <a name="Conversation+checkForTimedResponse"></a>
 
-### conversation.checkForTimedResponse(request, callback)
+### conversation.checkForTimedResponse(request)
 Call the Web API to see if there is a time-based response to process. You
 only need to call this if the previous response returned a value for the
 timedResponseInterval >= 0.  In this case, set a timer for that value (in
 seconds) and then call this method. If there is no time-based response,
-the callback will pass an empty Response object.
+the onResponse callback will be passed an empty Response object.
 
 **Kind**: instance method of <code>[Conversation](#Conversation)</code>  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | request | <code>[Request](#Request)</code> | A request object with at least apiKey and conversationId set. |
-| callback | <code>function</code> | A function to receive the Web API's response. It should have a single parameter that will be passed a Response object. |
 
 <a name="Conversation+getEntities"></a>
 
-### conversation.getEntities(entities, request, callback)
+### conversation.getEntities(entities, request)
 Request the values of the specified entities (i.e.: labels, counters, flags,
 and lists) from the Web API.
 
@@ -296,11 +289,10 @@ and lists) from the Web API.
 | --- | --- | --- |
 | entities | <code>Array.&lt;string&gt;</code> | An array of entity names. |
 | request | <code>[Request](#Request)</code> | A request object with at least apiKey and conversationId set. |
-| callback | <code>function</code> | A function to receive the Web API's response. It should have a single parameter that will be passed a Response object. |
 
 <a name="Conversation+setEntities"></a>
 
-### conversation.setEntities(entities, request, callback)
+### conversation.setEntities(entities, request)
 Change the value of the specified entities (i.e.: labels, counters, flags,
 and lists) via the Web API.
 
@@ -312,7 +304,6 @@ and lists) via the Web API.
 | entities[].name | <code>string</code> | The entity's name. |
 | entities[].value | <code>\*</code> | The entity's name, which can be any type. |
 | request | <code>[Request](#Request)</code> | A request object with at least apiKey and conversationId set. |
-| callback | <code>function</code> | A function to receive the Web API's response. It should have a single parameter that will be passed a Response object. |
 
 <a name="Conversation+getConversationId"></a>
 
@@ -330,6 +321,10 @@ clients. This can persist across sessions, if desired.
 
 **Kind**: instance method of <code>[Conversation](#Conversation)</code>  
 **Returns**: <code>string</code> - The current participant ID.  
+<a name="Conversation..onResponse"></a>
+
+### Conversation~onResponse : <code>function</code>
+**Kind**: inner typedef of <code>[Conversation](#Conversation)</code>  
 <a name="Request"></a>
 
 ## Request
