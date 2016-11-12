@@ -1,22 +1,25 @@
 var fs = require('fs');
 
 class TestBase {
-    constructor(conversation, request,project) {
+    constructor(conversation, request, project) {
         this.conversation = conversation;
         this.request = request;
         this.project = project;
     }
 
     introduction(t) {
-        this.start().then((response) => {
+        this.start().then(response => {
             this.textShouldMatch("Hello. What's your name?", response, t, true);
-            this.conversation.sendText('janet', this.request, (response) => {
+            this.conversation.sendText('janet');
+            this.conversation.onResponse = (response) => {
                 this.textShouldMatch("Hello Janet", response, t, true);
-                let state = this.conversation.getParticipantId();
+                let state = {
+                    participantId: this.conversation.getParticipantId()
+                };
                 this.start(state).then((response) => {
                     this.textShouldMatch('Welcome back JANET', response, t);
                 });
-            });
+            };
         });
     }
 
@@ -38,117 +41,139 @@ class TestBase {
             }
 
             let audio = new DataView(ab);
-            this.conversation.sendAudio(audio, 1, this.request, (response) => {
+
+            this.conversation.sendAudio(audio, 1);
+            this.conversation.onResponse = (response) => {
                 this.textShouldMatch('Hello Grant', response, t);
-            });
+            };
         });
     }
 
     goToResponse(t) {
         this.start().then((response) => {
             let guid = 'd6701507-61a9-47d9-8300-2e9c6b08dfcd';
-            this.conversation.goTo(guid, this.request, (response) => {
+            this.conversation.goTo(guid);
+            this.conversation.onResponse = (response) => {
                 this.textShouldMatch("Hello ", response, t);
-            });
+            };
         });
     }
 
     entities(t) {
         this.start().then((response) => {
             this.textShouldMatch("Hello. What's your name?", response, t, true);
-            this.conversation.sendText('jack', this.request, (response) => {
-                this.conversation.getEntities(['NAME'], this.request, (response) => {
+            this.conversation.sendText('jack');
+            this.conversation.onResponse = (response) => {
+                this.conversation.getEntities(['NAME']);
+                this.conversation.onResponse = (response) => {
                     this.entityShouldMatch({name:'NAME', value:'jack'}, response, t, true);
                     let label = { name: 'NAME', value: 'jill' };
-                    this.conversation.setEntities([label], this.request, (response) => {
+                    this.conversation.setEntities([label]);
+                    this.conversation.onResponse = (response) => {
                         this.entityShouldMatch(label, response, t);
-                    });
-                });
-            });
+                    };
+                };
+            };
         });
     }
 
     convo(t) {
         this.start().then(response => {
-            this.conversation.sendActivity('wizard', this.request, (response) => {
-                this.conversation.sendText('wizard', this.request, (response) => {
+            this.conversation.sendActivity('wizard');
+            this.conversation.onResponse = (response) => {
+                this.conversation.sendText('wizard');
+                this.conversation.onResponse = (response) => {
                     this.textShouldMatch('Talk to the dwarf', response, t, true);
-                    this.conversation.sendText('dwarf', this.request, (response) => {
+                    this.conversation.sendText('dwarf');
+                    this.conversation.onResponse = (response) => {
                         this.textShouldMatch("Here's my axe", response, t, true);
-                        this.conversation.sendText('dwarf', this.request, (response) => {
+                        this.conversation.sendText('dwarf')
+                        this.conversation.onResponse = (response) => {
                             this.textShouldMatch("You already have my axe", response, t, true);
-                            this.conversation.sendText('wizard', this.request, (response) => {
+                            this.conversation.sendText('wizard');
+                            this.conversation.onResponse = (response) => {
                                 this.textShouldMatch("Here's my spell", response, t, true);
-                                this.conversation.sendText('wizard', this.request, (response) => {
+                                this.conversation.sendText('wizard');
+                                this.conversation.onResponse = (response) => {
                                     this.textShouldMatch("You already have my spell", response, t);
-                                });
-                            });
-                        });
-                    });
-                });
-            });
+                                };
+                            };
+                        };
+                    };
+                };
+            };
         });
     }
 
     timedResponse(t) {
         this.start().then(reponse => {
-            this.conversation.sendActivity('fafa5f56-d6f1-4381-aec8-ce37a68e465f', this.request, (response) => {
+            this.conversation.sendActivity('fafa5f56-d6f1-4381-aec8-ce37a68e465f');
+            this.conversation.onResponse = (response) => {
                 this.textShouldMatch('Say something', response, t, true);
-                this.conversation.checkForTimedResponse(this.request, (response) => {
+                this.conversation.checkForTimedResponse();
+                this.conversation.onResponse = (response) => {
                     if (response.outputs.length) {
                         t.fail('response was returned');
                         t.end();
                     }
-                    this.sleep(2.1).then(() => {
-                        this.conversation.checkForTimedResponse(this.request, (response) => {
+                    this.sleep(response.timedResponseInterval).then(() => {
+                        this.conversation.checkForTimedResponse();
+                        this.conversation.onResponse = (response) => {
                             this.textShouldMatch("I'm waiting", response, t, true);
-                            this.conversation.sendText('hit the fallback', this.request, (response) => {
+                            this.conversation.sendText('hit the fallback');
+                            this.conversation.onResponse = (response) => {
                                 this.textShouldMatch(["That was something", "Yes it was"], response, t);
-                            });
-                        });
+                            };
+                        };
                     });
-                });
-            });
+                };
+            };
         });
     }
 
     eventsAndBehaviors(t) {
         this.start().then(response => {
-            this.conversation.sendEvent('simple_event', null, this.request, (response) => {
+            this.conversation.sendEvent('simple_event');
+            this.conversation.onResponse = (response) => {
                 this.behaviorShouldMatch({behavior: 'simple_action'}, response, t, true);
-                this.conversation.sendEvent('event_with_param', {name: 'green'}, this.request, (response) => {
+                this.conversation.sendEvent('event_with_param', {name: 'green'});
+                this.conversation.onResponse = (response) => {
                     let behavior = {
                         behavior: 'action_with_param',
                         parameters: { name: 'Green' },
                     };
                     this.textShouldMatch('Green Event Called', response, t, true)
                     this.behaviorShouldMatch(behavior, response, t, true);
-                    this.conversation.sendEvent('event_with_param', {name: 'red'}, this.request, (response) => {
+                    this.conversation.sendEvent('event_with_param', {name: 'red'});
+                    this.conversation.onResponse = (response) => {
                         let behavior = {
                             behavior: 'action_with_param',
                             parameters: { name: 'Red' },
                         };
                         this.textShouldMatch('Red Event Called', response, t, true)
                         this.behaviorShouldMatch(behavior, response, t);
-                    });
-                });
-            });
+                    };
+                };
+            };
         });
     }
 
     scheduleTimer(t) {
         this.start().then(response => {
-            this.conversation.sendActivity('timer', this.request, (response) => {
+            this.conversation.sendActivity('timer');
+            this.conversation.onResponse = (response) => {
                 this.textShouldMatch('Starting timer', response, t, true);
-                this.conversation.sendText('intervening input', this.request, (response) => {
+                this.conversation.sendText('intervening input');
+                this.conversation.onResponse = (response) => {
                     this.textShouldMatch('Ignored', response, t, true);
-                    this.sleep(2.1).then(() => {
-                        this.conversation.checkForTimedResponse(this.request, (response) =>{
+                    this.sleep(response.timedResponseInterval).then(() => {
+                        this.conversation.checkForTimedResponse();
+                        this.conversation.onResponse = (response) => {
                             this.textShouldMatch('Timer fired',response, t);
-                        });
+                        };
                     });
-                });
-            });
+                };
+            };
         });
     }
 
@@ -219,12 +244,19 @@ class TestBase {
     }
 
     start(state = null) {
-        state ? this.request.participantId = state : this.request.participantId = null;
+        this.request.participantId = null;
+        this.request.conversationId = null;
+
+        if (state) {
+            this.request.participantId = state.participantId;
+            this.request.conversationId = state.conversationId;
+        }
+
         return new Promise((resolve) => {
-            this.conversation.start(this.project, this.request, (response) => {
-                this.request.conversationId = response.conversationId;
+            this.conversation.onResponse = (response) => {
                 resolve(response);
-            });
+            };
+            this.conversation.start(this.project, this.request);
         });
     }
 

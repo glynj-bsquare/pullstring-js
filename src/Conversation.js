@@ -20,11 +20,12 @@ import {Speech} from './Speech.js';
  *
  * The Web API returns a Response object that can contain zero or more outputs,
  * such as lines of dialog or behaviors. This Response object is passed to the
- * callback as its sole parameter.
+ * onResponse callback as its sole parameter.
  *
  * @property {string} ApiBaseUrl
  * @property {Number} AsrSampleRate
  * @property {Number} AsrChannels
+ * @property {Function} onResponse
  */
 class Conversation {
     /**
@@ -33,11 +34,12 @@ class Conversation {
      * XMLHttpReqeuest module class.
      */
     constructor(nodeXhr = null) {
+        this.onResponse = null;
         let config = { baseUrl: Conversation.ApiBaseUrl };
         if (nodeXhr) config.xhr = nodeXhr;
         this._client = new RestClient(config);
         this._speech = new Speech();
-        this._audioRequest = null;
+        this._request = null;
     }
 
     /**
@@ -47,17 +49,14 @@ class Conversation {
      * @param {Request} request A Request object with a valid apiKey value
      * specified.
      * @param {string} request.apiKey Your API key.
-     * @param {function} callback A function to receive the Web API's response.
-     * It should have a single parameter that will be passed a Response object.
      */
-    start(projectName, request, callback) {
+    start(projectName, request) {
         let json = {
             project: projectName,
             time_zone_offset: request.timeZoneOffset, // eslint-disable-line camelcase
         };
 
-        request.conversationId = null;
-        this._post(json, request, callback);
+        this._post(json, request);
     }
 
     /**
@@ -68,15 +67,13 @@ class Conversation {
      * @param {string} request.apiKey Your API key.
      * @param {string} request.conversationId The conversation ID received when
      * the conversation was started.
-     * @param {function} callback A function to receive the Web API's response.
-     * It should have a single parameter that will be passed a Response object.
      */
-    sendText(text, request, callback) {
+    sendText(text, request) {
         let json = {
             text: text,
         };
 
-        this._post(json, request, callback);
+        this._post(json, request);
     }
 
     /**
@@ -85,15 +82,13 @@ class Conversation {
      * @param {string} activity The activity name or ID.
      * @param {Request} request A request object with at least apiKey and
      * conversationId set.
-     * @param {function} callback A function to receive the Web API's response.
-     * It should have a single parameter that will be passed a Response object.
      */
-    sendActivity(activity, request, callback) {
+    sendActivity(activity, request) {
         let json = {
             activity: activity,
         };
 
-        this._post(json, request, callback);
+        this._post(json, request);
     }
 
     /**
@@ -102,10 +97,8 @@ class Conversation {
      * @param {Object} parameters Any accompanying parameters.
      * @param {Request} request A request object with at least apiKey and
      * conversationId set.
-     * @param {function} callback A function to receive the Web API's response.
-     * It should have a single parameter that will be passed a Response object.
      */
-    sendEvent(event, parameters, request, callback) {
+    sendEvent(event, parameters, request) {
         let eventObj = {
             name: event,
             parameters: parameters || {},
@@ -115,7 +108,7 @@ class Conversation {
             event: eventObj,
         };
 
-        this._post(json, request, callback);
+        this._post(json, request);
     }
 
     /**
@@ -127,8 +120,7 @@ class Conversation {
      * conversationId set.
      */
     startAudio(request) {
-        this._speech.start();
-        this._audioRequest = request;
+        if (this._ensureRequest(request)) this._speech.start();
     }
 
     /**
@@ -145,17 +137,14 @@ class Conversation {
     /**
      * Signal that all audio has been provided via add_audio() calls. This will
      * complete the audio request and return the Web API response.
-     * @param {function} callback A function to receive the Web API's response.
-     * It should have a single parameter that will be passed a Response object.
      */
-    stopAudio(callback) {
+    stopAudio() {
         let _this = this;
         this._speech.getBytes((data) => {
             _this._speech.flush();
             _this._postAudio(
                 data,
-                _this._audioRequest,
-                callback
+                _this._request
             );
         });
     }
@@ -169,17 +158,15 @@ class Conversation {
      * that only 16-bit linear PCM WAV format at 16k is currently supported.
      * @param {Request} request A request object with at least apiKey and
      * conversationId set.
-     * @param {function} callback A function to receive the Web API's response.
-     * It should have a single parameter that will be passed a Response object.
      * */
-    sendAudio(audio, format, request, callback) {
+    sendAudio(audio, format, request) {
         if (Object.prototype.toString.call(audio) !== '[object DataView]') {
-            this._returnError('Audio sent to sendAudio is not a DataView', callback);
+            this._returnError('Audio sent to sendAudio is not a DataView');
             return;
         }
 
         if (format !== Request.EAudioFormat.Wav16k) {
-            this._returnError('Unsupported format sent to sendAudio.', callback);
+            this._returnError('Unsupported format sent to sendAudio.');
             return;
         }
 
@@ -190,7 +177,7 @@ class Conversation {
             return;
         }
 
-        this._postAudio(audioData, request, callback);
+        this._postAudio(audioData, request);
     }
 
     /**
@@ -198,15 +185,13 @@ class Conversation {
      * @param {string} responseId The UUID of the response to jump to.
      * @param {Request} request A request object with at least apiKey and
      * conversationId set.
-     * @param {function} callback A function to receive the Web API's response.
-     * It should have a single parameter that will be passed a Response object.
      */
-    goTo(responseId, request, callback) {
+    goTo(responseId, request) {
         let json = {
             goto: responseId,
         };
 
-        this._post(json, request, callback);
+        this._post(json, request);
     }
 
     /**
@@ -217,12 +202,10 @@ class Conversation {
      * the callback will pass an empty Response object.
      * @param {Request} request A request object with at least apiKey and
      * conversationId set.
-     * @param {function} callback A function to receive the Web API's response.
-     * It should have a single parameter that will be passed a Response object.
      */
-    checkForTimedResponse(request, callback) {
+    checkForTimedResponse(request) {
         let json = {/* empty json */};
-        this._post(json, request, callback);
+        this._post(json, request);
     }
 
     /**
@@ -231,12 +214,10 @@ class Conversation {
      * @param {string[]} entities An array of entity names.
      * @param {Request} request A request object with at least apiKey and
      * conversationId set.
-     * @param {function} callback A function to receive the Web API's response.
-     * It should have a single parameter that will be passed a Response object.
      */
-    getEntities(entities, request, callback) {
+    getEntities(entities, request) {
         if (!Array.isArray(entities)) {
-            this._returnError('entities sent to getEntities must be an array', callback);
+            this._returnError('entities sent to getEntities must be an array');
             return;
         }
 
@@ -244,7 +225,7 @@ class Conversation {
             get_entities: entities, // eslint-disable-line camelcase
         };
 
-        this._post(json, request, callback);
+        this._post(json, request);
     }
 
     /**
@@ -256,12 +237,10 @@ class Conversation {
      * @param {*} entities[].value The entity's name, which can be any type.
      * @param {Request} request A request object with at least apiKey and
      * conversationId set.
-     * @param {function} callback A function to receive the Web API's response.
-     * It should have a single parameter that will be passed a Response object.
      */
-    setEntities(entities, request, callback) {
+    setEntities(entities, request) {
         if (!Array.isArray(entities)) {
-            this._returnError('entities sent to setEntities must be an array', callback);
+            this._returnError('entities sent to setEntities must be an array');
             return;
         }
 
@@ -275,7 +254,7 @@ class Conversation {
             set_entities: entObj, // eslint-disable-line camelcase
         };
 
-        this._post(json, request, callback);
+        this._post(json, request);
     }
 
     /**
@@ -284,8 +263,8 @@ class Conversation {
      * @return {string} The concurrent conversation ID.
      */
     getConversationId() {
-        if (this._lastResponse.conversationId) {
-            return this._lastResponse.conversationId;
+        if (this._request.conversationId) {
+            return this._request.conversationId;
         }
 
         return null;
@@ -297,21 +276,35 @@ class Conversation {
      * @return {string} The current participant ID.
      */
     getParticipantId() {
-        if (this._lastResponse.participantId) {
-            return this._lastResponse.participantId;
+        if (this._request.participantId) {
+            return this._request.participantId;
         }
 
         return null;
     }
 
-    _post(body, request, callback, contentType = 'application/json', doEncode = true) {
-        let endpoint = this._endpointForRequest(request);
-        let headers = this._headersForRequest(request, contentType);
-        let params = this._paramsForRequest(request);
+    _ensureRequest(request) {
+        if (request) {
+            this._request = request;
+        }
+
+        if (!this._request) {
+            this._returnError('Valid request object missing');
+            return false;
+        }
+
+        return true;
+    }
+
+    _post(body, request, contentType = 'application/json', doEncode = true) {
+        if (!this._ensureRequest(request)) return;
+        let endpoint = this._endpointForRequest(this._request);
+        let headers = this._headersForRequest(this._request, contentType);
+        let params = this._paramsForRequest(this._request);
 
         // If doEncode is true, our body is json. So add more params from request.
         if (doEncode) {
-            body = this._bodyForRequest(request, body);
+            body = this._bodyForRequest(this._request, body);
         }
 
         this._client.post(
@@ -319,18 +312,18 @@ class Conversation {
             params,
             headers,
             body,
-            (response) => this._responseHandler(response, callback),
+            (response) => this._responseHandler(response),
             doEncode
         );
     }
 
-    _postAudio(audio, request, callback) {
+    _postAudio(audio, request) {
         if (!audio) {
-            this._returnError('Unable to extract audio data', callback);
+            this._returnError('Unable to extract audio data');
             return;
         }
 
-        this._post(audio, request, callback, 'audio/l16; rate=16000', false);
+        this._post(audio, this._request, 'audio/l16; rate=16000', false);
     }
 
     _headersForRequest(request, contentType) {
@@ -388,13 +381,13 @@ class Conversation {
         return endpoint;
     }
 
-    _responseHandler(json, callback) {
+    _responseHandler(json) {
         let response = new Response(json);
-        if (response.status.success) {
-            this._lastResponse = response;
-        };
-
-        callback && callback(response);
+        if (response.status.success && this._request) {
+            this._request.conversationId = response.conversationId;
+            this._request.participantId = response.participantId;
+        }
+        this.onResponse && this.onResponse(response);
     }
 
     _getWavData(dataView) {
@@ -439,13 +432,13 @@ class Conversation {
         return retVal;
     }
 
-    _returnError(message, callback) {
+    _returnError(message) {
         let error = new Status({
             success: false,
             message: message,
         });
 
-        callback && callback({
+        this.onResponse && this.onResponse({
             status: error,
         });
     }

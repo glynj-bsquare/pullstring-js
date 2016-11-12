@@ -6,7 +6,6 @@
         this.channels = PS.Conversation.AsrChannels;
         this.conversation = conversation;
         this.isRecording = false;
-        this.request = null;
         this.audioContext = null;
         this.mediaStreamSource = null;
         this.node = null;
@@ -62,14 +61,14 @@
             }
         };
 
-        this.startAudio = function(request) {
+        this.startAudio = function() {
             this.isRecording = true
-            this.conversation.startAudio(request);
+            this.conversation.startAudio();
         };
 
-        this.stopAudio = function(callback) {
+        this.stopAudio = function() {
             this.isRecording = false;
-            this.conversation.stopAudio(callback);
+            this.conversation.stopAudio();
         };
     }
 

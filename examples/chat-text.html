@@ -21,31 +21,9 @@ var PS = pullstring;
 const KEY = '9fd2a189-3d57-4c02-8a55-5f0159bff2cf';
 const PROJECT = 'e50b56df-95b7-4fa1-9061-83a7a9bea372';
 
-var request = new PS.Request({
-    apiKey: KEY,
-});
-
-var conversation = new PS.Conversation();
-
-// start conversation immediately
-$(document).ready(function() {
-    conversation.start(PROJECT, request, showResponse);
-});
-
-// display user input in the chatbox and send message to Web API
-$("#submitinput").click(function(){
-    var msg = $("#userinput").val();
-    var oldHeight = getScrollHeight();
-    conversation.sendText(msg, request, showResponse);
-    $("#userinput").val("");
-    $("#chatbox").append("<strong>You:<\/strong> " + msg + "<br/>");
-    autoScroll(oldHeight);
-    return false;
-});
-
 // print the response from the Web API to the chat box
-var showResponse = function(response) {
-    if (!request.conversationId) request.conversationId = response.conversationId;
+var conversation = new PS.Conversation();
+conversation.onResponse = function(response) {
     for (var output of response.outputs) {
         if (output.text) {
             var oldHeight = getScrollHeight();
@@ -54,6 +32,26 @@ var showResponse = function(response) {
         }
     }
 };
+
+// start conversation immediately
+$(document).ready(function() {
+    var request = new PS.Request({
+        apiKey: KEY,
+    });
+    conversation.start(PROJECT, request);
+});
+
+// display user input in the chatbox and send message to Web API
+$("#submitinput").click(function(){
+    var msg = $("#userinput").val();
+    var oldHeight = getScrollHeight();
+    conversation.sendText(msg);
+    $("#userinput").val("");
+    $("#chatbox").append("<strong>You:<\/strong> " + msg + "<br/>");
+    autoScroll(oldHeight);
+    return false;
+});
+
 
 var autoScroll = function(oldHeight) {
     var newHeight = getScrollHeight();

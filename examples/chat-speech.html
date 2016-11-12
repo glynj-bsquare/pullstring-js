@@ -22,46 +22,11 @@ var PS = pullstring;
 const KEY = '9fd2a189-3d57-4c02-8a55-5f0159bff2cf';
 const PROJECT = 'e50b56df-95b7-4fa1-9061-83a7a9bea372';
 
-var request = new PS.Request({
-    apiKey: KEY,
-});
-
 var conversation = new PS.Conversation();
 var listener = new SpeechListener(conversation);
 var audioElement;
 
-$(document).ready(function() {
-    // audio tag for playing files found in responses
-    audioElement = document.createElement('audio');
-
-    // prepare the mic and then start the conversation
-    listener.init(function(success) {
-        if (!success) {
-            throw new Error("This browser does not appear to support audio recording.");
-        }
-
-        conversation.start(PROJECT, request, processResponse);
-    });
-});
-
-// hold to record
-$("#recordinput").mousedown(function() {
-    listener.startAudio(request);
-})
-
-// release to stop recording
-$("#recordinput").mouseup(function() {
-    listener.stopAudio(processResponse);
-});
-
-// ignore form submission
-$("#recordinput").click(function() {
-    return false;
-});
-
-var processResponse = function(response) {
-    if (!request.conversationId) request.conversationId = response.conversationId;
-
+conversation.onResponse = function(response) {
     // print the recognized speech if the request was speech
     if (response.asrHypothesis) {
         var msg = response.asrHypothesis;
@@ -85,6 +50,40 @@ var processResponse = function(response) {
         }
     }
 };
+
+
+$(document).ready(function() {
+    // audio tag for playing files found in responses
+    audioElement = document.createElement('audio');
+
+    // prepare the mic and then start the conversation
+    listener.init(function(success) {
+        if (!success) {
+            throw new Error("This browser does not appear to support audio recording.");
+        }
+
+        var request = new PS.Request({
+            apiKey: KEY,
+        });
+
+        conversation.start(PROJECT, request);
+    });
+});
+
+// hold to record
+$("#recordinput").mousedown(function() {
+    listener.startAudio();
+})
+
+// release to stop recording
+$("#recordinput").mouseup(function() {
+    listener.stopAudio();
+});
+
+// ignore form submission
+$("#recordinput").click(function() {
+    return false;
+});
 
 var autoScroll = function(oldHeight) {
     var newHeight = getScrollHeight();
