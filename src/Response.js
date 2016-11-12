@@ -248,9 +248,14 @@ class Response {
         this.lastModified = json.last_modified ? new Date(json.last_modified) : null;
         this.conversationId = json.conversation ? String(json.conversation) : null;
         this.participantId = json.participant ? String(json.participant) : null;
-        this.etag = json = json.etag ? String(json.etag) : null;
-        this.timedResponseInterval = json.timed_response_interval ? +json.timed_response_interval : -1;
+        this.etag = json.etag ? String(json.etag) : null;
+        this.timedResponseInterval = json.timed_response_interval ? json.timed_response_interval : -1;
         this.asrHypothesis = json.asr_hypothesis ? String(json.asr_hypothesis) : null;
+        if (json.timed_response_interrubtable) {
+            this.timedResponseInterruptible = Boolean(json.timed_response_interrubtable);
+        } else {
+            this.timedResponseInterruptible = false;
+        }
     }
 }
 
