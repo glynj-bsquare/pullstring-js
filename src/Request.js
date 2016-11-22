@@ -56,7 +56,7 @@ class Request {
         this.buildType = config.buildType || EBuildType.Production;
         this.conversationId = config.conversationId;
         this.language = config.language || 'en-US';
-        this.locale = config.locale || 'en-US';
+        this.locale = config.locale;
         this.accountId = config.accountId;
         this.timeZoneOffset = config.timeZoneOffset || 0;
         this.restartIfModified = config.restartIfModified || true;
