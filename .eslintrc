@@ -49,7 +49,7 @@
       "generator-star-spacing": [2, "both"],
       "guard-for-in": 0,
       "handle-callback-err": [2, "^(err|error|anySpecificError)$" ],
-      "indent": [2, 4, { "SwitchCase": 4 }],
+      "indent": [2, 4, { "SwitchCase": 0 }],
       "key-spacing": [2, { "beforeColon": false, "afterColon": true }],
       "keyword-spacing":[2, { "before": true, "after": true }],
       "linebreak-style": 0,
