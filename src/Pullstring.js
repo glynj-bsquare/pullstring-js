@@ -9,6 +9,7 @@
 import {Conversation} from './Conversation.js';
 import {Response, Status, DialogOutput, BehaviorOutput, Label, Counter, Flag, List, Phoneme} from './Response.js';
 import {Request} from './Request.js';
+import {VersionInfo} from './VersionInfo.js';
 
 /**
  * Main PullString SDK module.
@@ -24,6 +25,7 @@ import {Request} from './Request.js';
  * @property {List} List
  * @property {Phoneme} Phoneme
  * @property {Request} Request
+ * @property {VersionInfo} VersionInfo
  */
 
 module.exports = {
@@ -38,4 +40,5 @@ module.exports = {
     List: List,
     Phoneme: Phoneme,
     Request: Request,
+    VersionInfo: VersionInfo,
 };

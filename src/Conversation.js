@@ -11,6 +11,7 @@ import {Response, Status} from './Response.js';
 import {RestClient} from './RestClient.js';
 import {Request} from './Request.js';
 import {Speech} from './Speech.js';
+import {VersionInfo} from './VersionInfo.js';
 
 /**
  * The Conversation class can be used to interface with the PullString API.
@@ -37,7 +38,7 @@ class Conversation {
          * @callback Conversation~onResponse
          */
         this.onResponse = null;
-        let config = { baseUrl: Conversation.ApiBaseUrl };
+        let config = { baseUrl: VersionInfo.ApiBaseUrl };
         if (nodeXhr) config.xhr = nodeXhr;
         this._client = new RestClient(config);
         this._speech = new Speech();
@@ -344,9 +345,9 @@ class Conversation {
     _paramsForRequest(request) {
         let params = {
             asr_language: request.language, // eslint-disable-line camelcase
-            locale: request.locale,
         };
 
+        if (request.locale) params.locale = request.locale;
         if (request.acountId) params.account = request.accountId;
 
         return params;
@@ -449,13 +450,6 @@ class Conversation {
 }
 
 // static constants
-Object.defineProperty(Conversation, 'ApiBaseUrl', {
-    value: 'https://conversation.pullstring.ai/v1/',
-    writable: false,
-    enumerable: true,
-    configurable: false,
-});
-
 Object.defineProperty(Conversation, 'AsrSampleRate', {
     value: 16000,
     writable: false,
