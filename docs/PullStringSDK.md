@@ -54,6 +54,9 @@ lip sync.</p>
 <dt><a href="#Response">Response</a></dt>
 <dd><p>Describe a single response from the PullString Web API</p>
 </dd>
+<dt><a href="#VersionInfo">VersionInfo</a></dt>
+<dd><p>Encapsulates version information for PullString&#39;s&#39; Web API.</p>
+</dd>
 </dl>
 
 ## Constants
@@ -69,6 +72,9 @@ lip sync.</p>
 </dd>
 <dt><a href="#EEntityType">EEntityType</a></dt>
 <dd><p>Define the list of entity types</p>
+</dd>
+<dt><a href="#EFeatures">EFeatures</a></dt>
+<dd><p>Define features to check if they are supported.</p>
 </dd>
 </dl>
 
@@ -92,6 +98,7 @@ Main PullString SDK module.
 | List | <code>[List](#List)</code> | 
 | Phoneme | <code>[Phoneme](#Phoneme)</code> | 
 | Request | <code>[Request](#Request)</code> | 
+| VersionInfo | <code>[VersionInfo](#VersionInfo)</code> | 
 
 <a name="Conversation"></a>
 
@@ -509,6 +516,23 @@ Describe a single response from the PullString Web API
 | Response.EOutputType | <code>[EOutputType](#EOutputType)</code> |  |
 | Response.EEntityType | <code>[EEntityType](#EEntityType)</code> |  |
 
+<a name="VersionInfo"></a>
+
+## VersionInfo
+Encapsulates version information for PullString's' Web API.
+
+**Kind**: global class  
+<a name="VersionInfo.hasFeature"></a>
+
+### VersionInfo.hasFeature(feature)
+Check if the endpoint currently supports a feature.
+
+**Kind**: static method of <code>[VersionInfo](#VersionInfo)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| feature | <code>[EFeatures](#EFeatures)</code> | The feature to check. |
+
 <a name="EBuildType"></a>
 
 ## EBuildType : <code>enum</code>
@@ -570,4 +594,17 @@ Define the list of entity types
 | EEntityType.Counter | <code>string</code> | 
 | EEntityType.Flag | <code>string</code> | 
 | EEntityType.List | <code>string</code> | 
+
+<a name="EFeatures"></a>
+
+## EFeatures
+Define features to check if they are supported.
+
+**Kind**: global constant  
+**Read only**: true  
+**Properties**
+
+| Name | Type |
+| --- | --- |
+| EFeatures.StreamingAsr | <code>int</code> | 
 
