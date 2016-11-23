@@ -28,9 +28,9 @@ the tests on their own.
 ```
 npm run test
 ```
-## Example and Sample Code
+## Quickstart
 
-Below is a quick example of starting a conversation with the PullString Web API.  It will print the inital content under
+Below is a barebones example of starting a conversation with the PullString Web API.  It will print the inital content under
 the default Activity for your Project. The code assumes you have defined `MY_API_KEY` and `MY_PROJECT_ID` string with
 the appropriate IDs.  You can find these in the settings for your project in your account on **pullstring.com**.
 We've included the API key and Project ID for the example **Rock, Paper, Scissors** chatbot.
