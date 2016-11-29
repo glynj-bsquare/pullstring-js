@@ -1,4 +1,4 @@
-# PullStringSDK Class Reference
+# PullString SDK Class Reference
 
 The PullString Web API lets you add text or audio conversational capabilities to your apps, based upon content that you write in the PullString Author environment and publish to the PullString Platform.
 
@@ -25,14 +25,14 @@ Name|Description
 [`BehaviorOutput`](#BehaviorOutput) (extends [`Output`](#Output )|Subclass of Output that represents a behavior response
 [`Status`](#Status)|Describe the status and any errors from a Web API response
 [`Response`](#Response)|Describe a single response from the PullString Web API
-[`VersionInfo`](#VersionInfo)|Encapsulates version information for PullString&#39;s&#39; Web API.
+[`VersionInfo`](#VersionInfo)|Encapsulates version information for PullString's Web API.
 
 ## Enums
 
 Name|Description
 ----|-----------
  [`EBuildType`](#EBuildType)|The asset build tyoe to request for Web API requests
- [`EAudioFormat`](#EAudioFormat)|
+ [`EAudioFormat`](#EAudioFormat)|Describe audio formats used by the SDK
  [`EOutputType`](#EOutputType)|Define the set of outputs that can be returned in a response.
  [`EEntityType`](#EEntityType)|Define the list of entity types
  [`EFeatures`](#EFeatures)|Define features to check if they are supported.
@@ -44,7 +44,7 @@ Main PullString SDK module.
 
 <a name="Conversation"></a>
 
-## Conversation
+## Conversation Class
 The Conversation class can be used to interface with the PullString API.
 
 To begin a conversation, call the `start()` method, providing a PullString
@@ -54,14 +54,78 @@ The Web API returns a Response object that can contain zero or more outputs,
 such as lines of dialog or behaviors. This Response object is passed to the
 onResponse callback as its sole parameter.
 
-**Kind**: global class
+#### Sample Code
 
-**Properties**
+```js
+
+var PS = pullstring;
+
+// The API Key and Project ID can be found by logging in to pullstring.com and
+// navigating to Account > Web API keys (platform.pullstring.com/accounts/keys/)
+const MY_API_KEY = '...';
+const MY_PROJECT_ID = '...';
+
+var request = new PS.Request({
+    apiKey: MY_API_KEY,
+});
+
+var conversation = new PS.Conversation();
+
+conversation.onResponse = function(response) {
+    // response.outputs can contain dialog as well as any behaviors.
+    for (var output of response.outputs) {
+        if (output.type === PS.Response.EOutputType.DialogResponse) {
+            // Often, we're most concerned with the dialog response text, but
+            // dialog responses can contain audio and video uris as well as
+            // the line's duration.
+            console.log(output.character + ": " + output.text);
+        }
+
+        // All custom behaviors defined in PullString Author are returned
+        // by the Web API when they occur. Others, such as setting a label,
+        // are internal to the bot and will not appear in responses.
+        if (output.type === PS.Response.EOutputType.BehaviorResponse) {
+            console.log({
+                output.behavior,
+                output.parameters
+            });
+        }
+    }
+
+    // if timed response is set, set a timer to check the Web API for more
+    // output in the specified number of seconds.
+    if (response.timedResponseInterval > 0) {
+        // convert timed response interval to milliseconds
+        var delayTime = response.timedResponseInterval * 1000;
+        // start the timer
+        setTimeout(timeoutElapsed, delayTime);
+    }
+};
+
+// When the timout expires, ping the Web API.
+var timeoutElapsed = function() {
+    conversation.checkForTimedResponse();
+}
+
+// To start a conversation, pass a valid Project ID and a request containing
+// at least a valid API Key. You can also set the request's conversationId
+// and participantId to a stored values to continue a previous conversation.
+conversation.start(MY_PROJECT_ID, request);
+
+// ...
+
+// At some point, send some text to the bot.
+conversation.sendText("Hello, world");
+
+```
+
+### Properties
 
 | Name | Type | Description
 | --- | --- | ---
 | onResponse | `function` | Callback to receive responses from the Web API.
 
+### Methods
 
 * [Conversation](#Conversation)
     * [new Conversation([nodeXhr])](#new_Conversation_new)
@@ -97,8 +161,6 @@ Creates a Conversation
 Start a new conversation with the Web API and receive a reponse via the
 onResponse callback.
 
-**Kind**: instance method of [`Conversation`](#Conversation)
-
 | Param | Type | Description | Required
 | --- | --- | --- | --- |
 | projectName | `string` | The PullString project ID. | Yes
@@ -109,8 +171,6 @@ onResponse callback.
 ### conversation.sendText(text, [request])
 Send user input text to the Web API and receive a response via the
 onResponse callback.
-
-**Kind**: instance method of [`Conversation`](#Conversation)
 
 | Param | Type | Description | Required
 | --- | --- | --- | --- |
@@ -123,8 +183,6 @@ onResponse callback.
 Send an activity name or ID to the Web API and receive a response via
 the onResponse callback.
 
-**Kind**: instance method of [`Conversation`](#Conversation)
-
 | Param | Type | Description | Required
 | --- | --- | --- | --- |
 | activity | `string` | The activity name or ID. | Yes |
@@ -135,8 +193,6 @@ the onResponse callback.
 ### conversation.sendEvent(event, parameters, [request])
 Send an event to the Web API and receive a response via the onResponse
 callback.
-
-**Kind**: instance method of [`Conversation`](#Conversation)
 
 | Param | Type | Description | Required
 | --- | --- | --- | --- |
@@ -152,8 +208,6 @@ Initiate a progressive (chunked) streaming of audio data, where supported.
 Note, chunked streaming is not currently implemented, so this will batch
 up all audio and send it all at once when end_audio() is called.
 
-**Kind**: instance method of [`Conversation`](#Conversation)
-
 | Param | Type | Description | Required
 | --- | --- | --- | --- |
 | [request] | [`Request`](#Request) | A request object with at least apiKey (`request.apiKey`) and conversationId (`request.conversationId`) set. | No |
@@ -165,8 +219,6 @@ Add a chunk of audio. You must call start_audio() first. The format of
 the audio must be mono LinearPCM audio data at a sample rate of 16000
 samples per second.
 
-**Kind**: instance method of [`Conversation`](#Conversation)
-
 | Param | Type | Description | Required
 | --- | --- | --- | --- |
 | buffer | `Float32Array` | The audio data, i.e. from `audioBuffer.getChannelData(0)`. | Yes
@@ -177,15 +229,12 @@ samples per second.
 Signal that all audio has been provided via add_audio() calls. This will
 complete the audio request and return the Web API response.
 
-**Kind**: instance method of [`Conversation`](#Conversation)
 <a name="Conversation+sendAudio"></a>
 
 ### conversation.sendAudio(audio, format, [request])
 Send an entire audio sample of the user speaking to the Web API. Audio
 must be raw, mono 16-bit linear PCM at a sample rate of 16000
 samples per second.
-
-**Kind**: instance method of [`Conversation`](#Conversation)
 
 | Param | Type | Description | Required
 | --- | --- | --- | --- |
@@ -198,7 +247,6 @@ samples per second.
 ### conversation.goTo(responseId, [request])
 Jump the conversation directly to a response.
 
-**Kind**: instance method of [`Conversation`](#Conversation)
 
 | Param | Type | Description | Required
 | --- | --- | --- | --- |
@@ -214,8 +262,6 @@ timedResponseInterval >= 0.  In this case, set a timer for that value (in
 seconds) and then call this method. If there is no time-based response,
 the onResponse callback will be passed an empty Response object.
 
-**Kind**: instance method of [`Conversation`](#Conversation)
-
 | Param | Type | Description | Required
 | --- | --- | --- | --- |
 | [request] | [`Request`](#Request) | A request object with at least apiKey (`request.apiKey`) and conversationId (`request.conversationId`) set. | No |
@@ -225,8 +271,6 @@ the onResponse callback will be passed an empty Response object.
 ### conversation.getEntities(entities, [request])
 Request the values of the specified entities (i.e.: labels, counters, flags,
 and lists) from the Web API.
-
-**Kind**: instance method of [`Conversation`](#Conversation)
 
 | Param | Type | Description | Required
 | --- | --- | --- | --- |
@@ -239,8 +283,6 @@ and lists) from the Web API.
 Change the value of the specified entities (i.e.: labels, counters, flags,
 and lists) via the Web API.
 
-**Kind**: instance method of [`Conversation`](#Conversation)
-
 | Param | Type | Description | Required
 | --- | --- | --- | --- |
 | entities | `Array.<Object>` | An array specifying the entities to set and their new values. Values are require for `entity.name` and `entity.value` for all objects in the array | Yes
@@ -252,7 +294,6 @@ and lists) via the Web API.
 Retrieve the current conversation ID. Conversation IDs can persist across
 sessions, if desired.
 
-**Kind**: instance method of [`Conversation`](#Conversation)
 **Returns**: `string` - The current conversation ID.
 <a name="Conversation+getParticipantId"></a>
 
@@ -260,19 +301,14 @@ sessions, if desired.
 Get the current participant ID, which identifies the current state for
 clients. This can persist across sessions, if desired.
 
-**Kind**: instance method of [`Conversation`](#Conversation)
 **Returns**: `string` - The current participant ID.
-<a name="Conversation..onResponse"></a>
 
-### Conversation~onResponse : `function`
-**Kind**: inner typedef of [`Conversation`](#Conversation)
 <a name="Request"></a>
 
-## Request
+## Request Class
 Describe the parameters for a request to the PullString Web API.
 
-**Kind**: global class
-**Properties**
+### Properties
 
 | Name | Type | Description |
 | --- | --- | --- |
@@ -288,12 +324,11 @@ Describe the parameters for a request to the PullString Web API.
 
 <a name="Phoneme"></a>
 
-## Phoneme
+## Phoneme Class
 Describe a single phoneme for an audio response, e.g., to drive automatic
 lip sync.
 
-**Kind**: global class
-**Properties**
+### Properties
 
 | Name | Type |
 | --- | --- |
@@ -302,11 +337,10 @@ lip sync.
 
 <a name="Entity"></a>
 
-## Entity
+## Entity Class
 Base class to describe a single entity, such as a label, counter, flag, or list
 
-**Kind**: global class
-**Properties**
+### Properties
 
 | Name | Type |
 | --- | --- |
@@ -314,83 +348,77 @@ Base class to describe a single entity, such as a label, counter, flag, or list
 
 <a name="Label"></a>
 
-## Label ⇐ [`Entity`](#Entity)
+## Label Class ⇐ extends [`Entity`](#Entity)
 Subclass of Entity to describe a single Label
 
-**Kind**: global class
-**Extends:** [`Entity`](#Entity)
-**Properties**
+### Properties
 
 | Name | Type | Description |
 | --- | --- | --- |
+| name | `string` |
 | type | [`EEntityType`](#EEntityType) | EEntityType.Label (read only) |
 | value | `string` |  |
 
 <a name="Counter"></a>
 
-## Counter ⇐ [`Entity`](#Entity)
+## Counter Class ⇐ extends [`Entity`](#Entity)
 Subclass of Entity to describe a single Counter
 
-**Kind**: global class
-**Extends:** [`Entity`](#Entity)
-**Properties**
+### Properties
 
 | Name | Type | Description |
 | --- | --- | --- |
+| name | `string` |
 | type | [`EEntityType`](#EEntityType) | EEntityType.Counter (read only) |
 | value | `number` |  |
 
 <a name="Flag"></a>
 
-## Flag ⇐ [`Entity`](#Entity)
+## Flag Class ⇐ extends [`Entity`](#Entity)
 Subclass of Entity to describe a single Flag
 
-**Kind**: global class
-**Extends:** [`Entity`](#Entity)
-**Properties**
+### Properties
 
 | Name | Type | Description |
 | --- | --- | --- |
+| name | `string` |
 | type | [`EEntityType`](#EEntityType) | EEntityType.Flag (read only) |
 | value | `boolean` |  |
 
 <a name="List"></a>
 
-## List ⇐ [`Entity`](#Entity)
+## List Class ⇐ extends [`Entity`](#Entity)
 Subclass of Entity to describe a single List
 
-**Kind**: global class
-**Extends:** [`Entity`](#Entity)
-**Properties**
+### Properties
 
 | Name | Type | Description |
 | --- | --- | --- |
+| name | `string` |
 | type | [`EEntityType`](#EEntityType) | EEntityType.List (read only) |
 | value | `Array` |  |
 
 <a name="Output"></a>
 
-## Output
+## Output Class
 Base class for outputs that are of type dialog or behavior
 
-**Kind**: global class
-**Properties**
+### Properties
 
 | Name | Type |
 | --- | --- |
-| guid | `string` |
+| guid | `string` | Unique identifier
 
 <a name="DialogOutput"></a>
 
-## DialogOutput ⇐ [`Output`](#Output)
+## DialogOutput Class ⇐ extends [`Output`](#Output)
 Subclass of Output that represents a dialog response
 
-**Kind**: global class
-**Extends:** [`Output`](#Output)
-**Properties**
+### Properties
 
 | Name | Type | Description |
 | --- | --- | --- |
+| guid | `string` | Unique identifier
 | type | [`EOutputType`](#EOutputType) | EOutputType.DialogResponse (read only) |
 | text | `string` | A character's text response. |
 | uri | `string` | Location of recorded audio, if available. |
@@ -401,26 +429,24 @@ Subclass of Output that represents a dialog response
 
 <a name="BehaviorOutput"></a>
 
-## BehaviorOutput ⇐ [`Output`](#Output)
+## BehaviorOutput Class ⇐ extends [`Output`](#Output)
 Subclass of Output that represents a behavior response
 
-**Kind**: global class
-**Extends:** [`Output`](#Output)
-**Properties**
+### Properties
 
 | Name | Type | Description |
 | --- | --- | --- |
+| guid | `string` | Unique identifier
 | type | [`EOutputType`](#EOutputType) | EOutputType.BehaviorResponse (read only) |
 | behavior | `string` | The name of the behavior. |
 | parameters | `Object` | An object with any parameters defined for the behavior. |
 
 <a name="Status"></a>
 
-## Status
+## Status Class
 Describe the status and any errors from a Web API response
 
-**Kind**: global class
-**Properties**
+### Properties
 
 | Name | Type |
 | --- | --- |
@@ -430,17 +456,17 @@ Describe the status and any errors from a Web API response
 
 <a name="Response"></a>
 
-## Response
+## Response Class
 Describe a single response from the PullString Web API
 
-**Kind**: global class
-**Properties**
+
+### Properties
 
 | Name | Type | Description |
 | --- | --- | --- |
 | status | [`Status`](#Status) |  |
-| outputs | `Array.<`[`Output`](#Output)`>` | Dialog or behaviors returned from the Web API |
-| entities | `Array.<`[`Entity`](#Entity)`>` | Counters, flags, etc for the converation |
+| outputs | `Array`[`<Output>`](#Output) | Dialog or behaviors returned from the Web API |
+| entities | `Array`[`<Entity>`](#Entity) | Counters, flags, etc for the converation |
 | lastModified | `Date` |  |
 | conversationId | `string` | Identifies an ongoing conversation to the Web API and can persist across sessions. It is required after a conversation is started. |
 | participantId | `string` | Identifies state to the Web API and can persist across sessions. |
@@ -452,10 +478,13 @@ Describe a single response from the PullString Web API
 
 <a name="VersionInfo"></a>
 
-## VersionInfo
-Encapsulates version information for PullString's' Web API.
+## VersionInfo Class
+Encapsulates version information for PullString's Web API.
 
-**Kind**: global class
+| Name | Type | Description
+| --- | --- | --- |
+| ApiBaseUrl | `string (static)` | The public-facing endpoint of the PullString Web API.
+
 <a name="VersionInfo.hasFeature"></a>
 
 ### VersionInfo.hasFeature(feature)
@@ -469,12 +498,10 @@ Check if the endpoint currently supports a feature.
 
 <a name="EBuildType"></a>
 
-## EBuildType : `enum`
+## EBuildType Enum
 The asset build tyoe to request for Web API requests
 
-**Kind**: global constant
-**Read only**: true
-**Properties**
+### Properties
 
 | Name | Type | Value |
 | --- | --- | --- |
@@ -484,10 +511,10 @@ The asset build tyoe to request for Web API requests
 
 <a name="EAudioFormat"></a>
 
-## EAudioFormat : `enum`
-**Kind**: global constant
-**Read only**: true
-**Properties**
+## EAudioFormat Enum
+Describe audio formats used by the SDK
+
+### Properties
 
 | Name | Type | Value |
 | --- | --- | --- |
@@ -496,12 +523,10 @@ The asset build tyoe to request for Web API requests
 
 <a name="EOutputType"></a>
 
-## EOutputType
+## EOutputType Enum
 Define the set of outputs that can be returned in a response.
 
-**Kind**: global constant
-**Read only**: true
-**Properties**
+### Properties
 
 | Name | Type | Value |
 | --- | --- | --- |
@@ -510,28 +535,24 @@ Define the set of outputs that can be returned in a response.
 
 <a name="EEntityType"></a>
 
-## EEntityType
+## EEntityTypem Enum
 Define the list of entity types
 
-**Kind**: global constant
-**Read only**: true
-**Properties**
+### Properties
 
 | Name | Type | Value |
 | --- | --- | --- |
-| EEntityType.Label | `string` | `"labal"` |
+| EEntityType.Label | `string` | `"label"` |
 | EEntityType.Counter | `string` | `"counter"` |
 | EEntityType.Flag | `string` | `"flag"` |
 | EEntityType.List | `string` | `"list"` |
 
 <a name="EFeatures"></a>
 
-## EFeatures
+## EFeatures Enum
 Define features to check if they are supported.
 
-**Kind**: global constant
-**Read only**: true
-**Properties**
+### Properties
 
 | Name | Type | Value |
 | --- | --- | --- |
