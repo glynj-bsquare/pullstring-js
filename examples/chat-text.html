@@ -21,6 +21,7 @@ var PS = pullstring;
 const KEY = '9fd2a189-3d57-4c02-8a55-5f0159bff2cf';
 const PROJECT = 'e50b56df-95b7-4fa1-9061-83a7a9bea372';
 
+var timeout = null;
 // print the response from the Web API to the chat box
 var conversation = new PS.Conversation();
 conversation.onResponse = function(response) {
@@ -30,6 +31,15 @@ conversation.onResponse = function(response) {
             $("#chatbox").append("<strong>" + output.character + ":<\/strong> " + output.text + "<br/>");
             autoScroll(oldHeight);
         }
+    }
+
+    // start timer, if timed response interval was set
+    if (response.timedResponseInterval > 0) {
+        var delayTime = response.timedResponseInterval * 1000;
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+        timeout = setTimeout(timeoutElapsed, delayTime);
     }
 };
 
@@ -43,6 +53,10 @@ $(document).ready(function() {
 
 // display user input in the chatbox and send message to Web API
 $("#submitinput").click(function(){
+    // stop timed response interval timer
+    if (timeout) {
+        clearTimeout(timeout);
+    }
     var msg = $("#userinput").val();
     var oldHeight = getScrollHeight();
     conversation.sendText(msg);
@@ -52,6 +66,9 @@ $("#submitinput").click(function(){
     return false;
 });
 
+var timeoutElapsed = function() {
+    conversation.checkForTimedResponse();
+}
 
 var autoScroll = function(oldHeight) {
     var newHeight = getScrollHeight();
