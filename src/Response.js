@@ -249,7 +249,7 @@ class Response {
         this.conversationId = json.conversation ? String(json.conversation) : null;
         this.participantId = json.participant ? String(json.participant) : null;
         this.etag = json.etag ? String(json.etag) : null;
-        this.timedResponseInterval = json.timed_response_interval ? json.timed_response_interval : -1;
+        this.timedResponseInterval = json.timed_response_interval ? +json.timed_response_interval : -1;
         this.asrHypothesis = json.asr_hypothesis ? String(json.asr_hypothesis) : null;
         if (json.timed_response_interrubtable) {
             this.timedResponseInterruptible = Boolean(json.timed_response_interrubtable);
