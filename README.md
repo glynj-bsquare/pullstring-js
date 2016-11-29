@@ -16,13 +16,13 @@ generate a library for the browser. Run the following command to install the nec
 npm run init
 ```
 
-Then, run the following command to build the library, run unit tests, and generate documentation.
+Then, run the following command to build the library and run unit tests.
 
 ```
 npm run build
 ```
 
-The build output can be found at `dist/pullstring.min.js` while docs are at `docs/PullStringSDK.md`. You can also run
+The build output can be found at `dist/pullstring.min.js`. You can also run
 the tests on their own.
 
 ```
