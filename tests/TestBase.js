@@ -1,17 +1,97 @@
 var fs = require('fs');
 
 class TestBase {
-    constructor(conversation, request, project) {
+    constructor(conversation, request, project, version) {
         this.conversation = conversation;
         this.request = request;
         this.project = project;
+        this.version = version;
+    }
+
+    versionInfo(t) {
+        if (this.version.ApiBaseUrl !== 'https://conversation.pullstring.ai/v1/') {
+            this.fail(t, 'Base Url is not correct');
+        }
+
+        if (this.version.hasFeature(this.version.EFeatures.StreamingAsr)) {
+            this.fail(t, 'Streaming Asr should not be enabled');
+        }
+
+        this.pass(t);
+    }
+
+    badRequest(t) {
+        this.conversation.onResponse = response => {
+            this.errorShouldMatch('Valid request object missing', response, t);
+        };
+
+        if (this.conversation.getConversationId()) {
+            this.fail(t, 'Conversation Id should be null at start');
+        }
+
+        if (this.conversation.getParticipantId()) {
+            this.fail(t, 'Participant Id should be null at start');
+        }
+
+        this.conversation.start();
+    }
+
+    badProject(t) {
+        let step = 0;
+        let crap = 'crapcrapcrap';
+        let apiKey = this.request.apiKey;
+
+        this.conversation.onResponse = response => {
+            switch (step++) {
+            case 0:
+                this.errorShouldMatch('Invalid project for API key', response, t, true);
+                this.request.apiKey = crap;
+                this.conversation.start(this.project, this.request);
+                break;
+            case 1:
+                this.request.apiKey = apiKey;
+                this.errorShouldMatch('Invalid Authorization Bearer Token', response, t);
+                break;
+            default: this.fail(t);
+            }
+        };
+        this.conversation.start(crap, this.request);
+    }
+
+    badAudio(t) {
+        let step = 0;
+        let ab1 = this.stringToArrayBuffer('RUFF ');
+        let audio1 = new DataView(ab1);
+
+        this.start(response => {
+            switch (step++) {
+            case 0:
+                this.conversation.sendAudio();
+                break;
+            case 1:
+                this.errorShouldMatch('Audio sent to sendAudio is not a DataView', response, t, true);
+                this.conversation.sendAudio(audio1, 0);
+                break;
+            case 2:
+                this.errorShouldMatch('Unsupported format sent to sendAudio.', response, t, true);
+                this.conversation.sendAudio(audio1, 1);
+                break;
+            case 3:
+                this.errorShouldMatch('Data is not a WAV file', response, t);
+                break;
+            default: (this.fail(t));
+            }
+        });
     }
 
     introduction(t) {
         let step = 0;
         this.start(response => {
-            switch (step) {
+            switch (step++) {
             case 0:
+                if (!this.conversation.getConversationId()) {
+                    this.fail('Conversation ID not found');
+                }
                 this.textShouldMatch("Hello. What's your name?", response, t, true);
                 this.conversation.sendText('janet');
                 break;
@@ -24,16 +104,15 @@ class TestBase {
             case 2:
                 this.textShouldMatch('Welcome back JANET', response, t);
                 break;
-            default: t.fail();
+            default: this.fail(t);
             }
-            step++;
         });
     }
 
     introAsr(t) {
         let step = 0;
         this.start(response => {
-            switch (step) {
+            switch (step++) {
             case 0:
                 this.textShouldMatch("Hello. What's your name?", response, t, true);
                 let file = fs.readFileSync('./res/asrTest.wav');
@@ -59,14 +138,13 @@ class TestBase {
                 break;
             default: t.fail();
             }
-            step++;
         });
     }
 
     goToResponse(t) {
         let step = 0;
         this.start(response => {
-            switch (step) {
+            switch (step++) {
             case 0:
                 let guid = 'd6701507-61a9-47d9-8300-2e9c6b08dfcd';
                 this.conversation.goTo(guid);
@@ -76,7 +154,6 @@ class TestBase {
                 break;
             default: t.fail();
             }
-            step++;
         });
     }
 
@@ -85,7 +162,7 @@ class TestBase {
         let label = { name: 'NAME', value: 'jill' };
 
         this.start(response => {
-            switch (step) {
+            switch (step++) {
             case 0:
                 this.textShouldMatch("Hello. What's your name?", response, t, true);
                 this.conversation.sendText('jack');
@@ -98,18 +175,39 @@ class TestBase {
                 this.conversation.setEntities([label]);
                 break;
             case 3:
-                this.entityShouldMatch(label, response, t);
+                this.entityShouldMatch(label, response, t, true);
+                this.conversation.getEntities('NAME');
+                break;
+            case 4:
+                this.errorShouldMatch('entities sent to getEntities must be an array', response, t, true);
+                this.conversation.setEntities(label);
+                break;
+            case 5:
+                this.errorShouldMatch('entities sent to setEntities must be an array', response, t, true);
+                this.conversation.sendText('test web service');
+                break;
+            case 6:
+                this.textShouldMatch(
+                    'Web Service Result = INPUT STRING / 42 / 0 / red, green, blue, and purple',
+                    response, t, true
+                );
+                this.conversation.getEntities(['Number2', 'Flag2', 'List2']);
+                break;
+            case 7:
+                let number2 = { name: 'Number2', value: 42 };
+                let flag2 = { name: 'Flag2', value: false };
+                let list2 = { name: 'List2', value: [ 'red', 'green', 'blue', 'purple' ] };
+                this.entityShouldMatch([ flag2, list2, number2 ], response, t);
                 break;
             default: t.fail();
             }
-            step++;
         });
     }
 
     convo(t) {
         let step = 0;
         this.start(response => {
-            switch (step) {
+            switch (step++) {
             case 0:
                 this.conversation.sendActivity('wizard');
                 break;
@@ -137,14 +235,13 @@ class TestBase {
                 break;
             default: t.fail();
             }
-            step++;
         });
     }
 
     timedResponse(t) {
         let step = 0;
         this.start(response => {
-            switch (step) {
+            switch (step++) {
             case 0:
                 this.conversation.sendActivity('fafa5f56-d6f1-4381-aec8-ce37a68e465f');
                 break;
@@ -170,14 +267,13 @@ class TestBase {
                 break;
             default: t.fail();
             }
-            step++;
         });
     }
 
     eventsAndBehaviors(t) {
         let step = 0;
         this.start(response => {
-            switch (step) {
+            switch (step++) {
             case 0:
                 this.conversation.sendEvent('simple_event');
                 break;
@@ -204,14 +300,13 @@ class TestBase {
                 break;
             default: t.fail();
             }
-            step++;
         });
     }
 
     scheduleTimer(t) {
         let step = 0;
         this.start(response => {
-            switch (step) {
+            switch (step++) {
             case 0:
                 this.conversation.sendActivity('timer');
                 break;
@@ -230,7 +325,6 @@ class TestBase {
                 break;
             default: t.fail();
             }
-            step++;
         });
     }
 
@@ -257,19 +351,42 @@ class TestBase {
     }
 
     entityShouldMatch(expected, response, t, moreTests) {
-        let entities = response.entities;
-        if (!entities.length) {
-            t.fail('Response contains no entities');
-        } else if (entities[0].name !== expected.name) {
-            t.fail('Entity name did not match');
-        } else if (entities[0].value !== expected.value) {
-            t.fail('Entity value did not match');
-        } else if (!moreTests) {
-            t.pass();
+        let tests = [];
+        if (Array.isArray(expected)) {
+            tests = expected;
+        } else {
+            tests.push(expected);
+        }
+
+        if (!response.entities.length) {
+            this.fail(t, 'Response contains no entities');
+        }
+
+        for (let i in tests) {
+            let entity = response.entities[i];
+            let test = tests[i];
+
+            if (entity.name !== test.name) {
+                this.fail(t, 'Entity name did not match');
+            }
+
+            if (Array.isArray(test.value)) {
+                if (!Array.isArray(entity.value)) {
+                    this.fail(t, 'Entity value was not an array, as expected');
+                }
+
+                for (let i in test.value) {
+                    if (test.value[i] !== entity.value[i]) {
+                        this.fail(t, 'Value in Array of Entity values did not match');
+                    }
+                }
+            } else if (entity.value !== test.value) {
+                this.fail(t, 'Entity value did not match');
+            }
         }
 
         if (!moreTests) {
-            t.end();
+            this.pass(t);
         }
     }
 
@@ -300,6 +417,23 @@ class TestBase {
         t.end();
     }
 
+    errorShouldMatch(expected, response, t, moreTests) {
+        if (response.status.success) {
+            t.fail('Request was successful but should have failed');
+            t.end();
+        }
+
+        if (!response.status.message.startsWith(expected)) {
+            t.fail(`Received an unexpected error message: ${response.status.message}`);
+            t.end();
+        }
+
+        if (!moreTests) {
+            t.pass();
+            t.end();
+        }
+    }
+
     start(callback = null, state = null) {
         this.request.participantId = null;
         this.request.conversationId = null;
@@ -324,6 +458,26 @@ class TestBase {
             }
         });
     }
+
+    fail(t, msg) {
+        t.fail(msg);
+        t.end();
+    }
+
+    pass(t) {
+        t.pass();
+        t.end();
+    }
+
+    stringToArrayBuffer(str) {
+        let ab = new ArrayBuffer(str.length * 2);
+        let arr = new Uint16Array(ab);
+        for (let i = 0; i < str.length; i++) {
+            arr[i] = str.charCodeAt(i);
+        }
+        return ab;
+    }
+
 }
 
 module.exports = { TestBase };

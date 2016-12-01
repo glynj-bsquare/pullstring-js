@@ -27,10 +27,26 @@ test.cb.before(t => {
                 buildType: BUILD_TYPE,
             });
 
-            global.testBase = new TestBase(conversation, request, PROJECT);
+            global.testBase = new TestBase(conversation, request, PROJECT, pullstring.VersionInfo);
             t.end();
         }
     );
+});
+
+test.cb.serial('feature info', t => {
+    testBase.versionInfo(t);
+});
+
+test.cb.serial('bad request', t => {
+    testBase.badRequest(t);
+});
+
+test.cb.serial('bad project', t => {
+    testBase.badProject(t);
+});
+
+test.cb.serial('bad audio', t => {
+    testBase.badAudio(t);
 });
 
 test.cb.serial('introduction', t => {

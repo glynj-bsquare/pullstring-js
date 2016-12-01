@@ -4,6 +4,7 @@ const XMLHttpRequest = require('xhr2').XMLHttpRequest;
 const Conversation = require('../src/Conversation.js').Conversation;
 const Request = require('../src/Request.js').Request;
 const TestBase = require('./TestBase.js').TestBase;
+const VersionInfo = require('../src/VersionInfo.js').VersionInfo;
 
 const API_KEY = '36890c35-8ecd-4ac4-9538-6c75eb1ea6f6';
 const PROJECT = '841cbd2c-e1bf-406b-9efe-a9025399aab4';
@@ -15,13 +16,29 @@ var request = new Request({
     buildType: BUILD_TYPE,
 });
 
-var testBase = new TestBase(conversation, request, PROJECT);
+var testBase = new TestBase(conversation, request, PROJECT, VersionInfo);
+
+test.cb.serial('feature info', t => {
+    testBase.versionInfo(t);
+});
+
+test.cb.serial('bad request', t => {
+    testBase.badRequest(t);
+});
+
+test.cb.serial('bad project', t => {
+    testBase.badProject(t);
+});
+
+test.cb.serial('bad audio', t => {
+    testBase.badAudio(t);
+});
 
 test.cb.serial('introduction', t => {
     testBase.introduction(t);
 });
 
-test.cb.serial('intro with asr', t=> {
+test.cb.serial('intro with asr', t => {
     testBase.introAsr(t);
 });
 
