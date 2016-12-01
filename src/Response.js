@@ -131,6 +131,9 @@ class Output {
  * @property {string} videoFile Location of recorded video, if available.
  * @property {number} duration Duration of spoken line in seconds.
  * @property {string} character The speaking character.
+ * @property {string} userData Optional arbitrary string data that was associated
+ * with the dialog line within PullString Author. This can be used to pass custom
+ * per-line information, such as an animation clip to play.
  * @property {Phoneme[]} phonemes Array of phonemes for driving automatic lip sync.
  */
 class DialogOutput extends Output {
@@ -142,6 +145,7 @@ class DialogOutput extends Output {
         this.videoFile = config.video_file ? String(config.video_file) : null;
         this.duration = config.duration ? +config.duration : 0;
         this.character = config.character ? String(config.character) : null;
+        this.userData = config.user_data ? String(config.user_data) : null;
         this.phonemes = [];
         for (let index in config.phonemes) {
             let p = config.phonemes[index];
@@ -251,8 +255,8 @@ class Response {
         this.etag = json.etag ? String(json.etag) : null;
         this.timedResponseInterval = json.timed_response_interval ? +json.timed_response_interval : -1;
         this.asrHypothesis = json.asr_hypothesis ? String(json.asr_hypothesis) : null;
-        if (json.timed_response_interrubtable) {
-            this.timedResponseInterruptible = Boolean(json.timed_response_interrubtable);
+        if (json.timed_response_interruptable) {
+            this.timedResponseInterruptible = Boolean(json.timed_response_interruptable);
         } else {
             this.timedResponseInterruptible = false;
         }
