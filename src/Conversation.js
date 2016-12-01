@@ -54,10 +54,15 @@ class Conversation {
      * @param {string} request.apiKey Your API key.
      */
     start(projectName, request) {
+        if (!this._ensureRequest(request)) return;
+
         let json = {
             project: projectName,
-            time_zone_offset: request.timeZoneOffset, // eslint-disable-line camelcase
         };
+
+        if (request.hasOwnProperty('timeZoneOffset')) {
+            json.time_zone_offset = request.timeZoneOffset; // eslint-disable-line camelcase
+        }
 
         this._post(json, request);
     }
@@ -268,7 +273,7 @@ class Conversation {
      * @return {string} The concurrent conversation ID.
      */
     getConversationId() {
-        if (this._request.conversationId) {
+        if (this._request && this._request.conversationId) {
             return this._request.conversationId;
         }
 
@@ -281,7 +286,7 @@ class Conversation {
      * @return {string} The current participant ID.
      */
     getParticipantId() {
-        if (this._request.participantId) {
+        if (this._request && this._request.participantId) {
             return this._request.participantId;
         }
 
@@ -293,7 +298,7 @@ class Conversation {
             this._request = request;
         }
 
-        if (!this._request) {
+        if (!this._request || !this._request.apiKey) {
             this._returnError('Valid request object missing');
             return false;
         }
@@ -441,6 +446,7 @@ class Conversation {
         let error = new Status({
             success: false,
             message: message,
+            code: 500,
         });
 
         this.onResponse && this.onResponse({
