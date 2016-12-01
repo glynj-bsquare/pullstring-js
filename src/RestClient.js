@@ -15,12 +15,6 @@ class RestClient {
         this.XMLHttpRequest = options.xhr || XMLHttpRequest;
     }
 
-    get(endpoint, params, headers, callback) {
-        if (!this.baseUrl) return;
-        let fullUrl = this._url(endpoint, params);
-        this._sendRequest(fullUrl, 'GET', headers, callback);
-    }
-
     post(endpoint, params, headers, body, callback, doEncode = true) {
         if (!this.baseUrl) return;
         let url = this._url(endpoint, params);
@@ -28,21 +22,6 @@ class RestClient {
             body = this.encode(body);
         }
         this._sendRequest(url, 'POST', headers, callback, body);
-    }
-
-    put(endpoint, params, headers, body, callback, doEncode = true) {
-        if (!this.baseUrl) return;
-        let url = this._url(endpoint, params);
-        if (doEncode && this.encode) {
-            body = this.encode(body);
-        }
-        this._sendRequest(url, 'POST', headers, callback, body);
-    }
-
-    delete(endpoint, params, headers, callback) {
-        if (!this.baseUrl) return;
-        let url = this._url(endpoint, params);
-        this._sendRequest(url, 'DELETE', headers, callback);
     }
 
     _url(endpoint, params) {
@@ -85,7 +64,12 @@ class RestClient {
                         response = this.decode(response);
                     }
                 } else {
-                    status.message = xhr.responseText;
+                    let error = this.decode(xhr.responseText);
+                    if (error.error.message) {
+                        status.message = error.error.message;
+                    } else {
+                        status.message = 'Error processing server response';
+                    }
                 }
 
                 response.status = status;
