@@ -5,11 +5,20 @@
   "main": "dist/pullstring.min.js",
   "scripts": {
     "init": "mkdir dist & mkdir docs & npm install",
-    "test": "node node_modules/ava/cli.js --verbose --timeout=20s tests/test-text-build.js",
-    "test-dev": "node node_modules/ava/cli.js --verbose --timeout=20s tests/test-text-dev.js",
+    "test": "ava --verbose --timeout=20s tests/test-text-build.js",
+    "test-dev": "nyc ava --verbose --timeout=20s tests/test-text-dev.js",
     "dev": "webpack --progress --colors --watch --mode=dev",
     "dev-and-test": "npm run dev & npm run test-dev -- --watch",
     "build": "webpack --mode=build; npm run test;"
+  },
+  "nyc": {
+    "include":[
+        "src/*.js"
+    ],
+    "exclude":[
+        "src/SpeechWorker.js",
+        "src/Speech.js"
+    ]
   },
   "keywords": [
     "PullString",
@@ -33,6 +42,7 @@
     "eslint": "^3.6.1",
     "eslint-loader": "^1.5.0",
     "jsdom": "^9.5.0",
+    "nyc": "^10.0.0",
     "webpack": "^1.13.2",
     "xhr2": "^0.1.3",
     "yargs": "^5.0.0"
