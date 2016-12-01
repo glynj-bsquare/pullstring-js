@@ -425,6 +425,7 @@ Subclass of Output that represents a dialog response
 | videoFile | `string` | Location of recorded video, if available. |
 | duration | `number` | Duration of spoken line in seconds. |
 | character | `string` | The speaking character. |
+| userData | `string` | Optional arbitrary string data that was associated with the dialog line within PullString Author. |
 | phonemes | `Array<`[`Phoneme`](#Phoneme)`>` | Array of phonemes for driving automatic lip sync. |
 
 <a name="BehaviorOutput"></a>
