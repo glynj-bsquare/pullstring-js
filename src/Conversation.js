@@ -429,7 +429,8 @@ class Conversation {
         }
 
         let dataStart = dataOffset + 8;
-        return new Buffer(dataView.buffer.slice(dataStart));
+        let result = new Buffer(dataView.buffer.slice(dataStart));
+        return result;
     }
 
     _dataViewGetString(dataView, offset, length) {
